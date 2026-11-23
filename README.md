@@ -17,7 +17,7 @@ Ratings count for 2 hours, and newer ones count more.
 
 ## Demo mode vs live mode
 
-Right now it lists 12 real bars around Grove Street in downtown Jersey City. Until live ratings are switched on, a rating you add stays on your own phone.
+Right now it lists 13 real bars around Grove Street in downtown Jersey City. Until live ratings are switched on, a rating you add stays on your own phone.
 
 To go **live** (everyone sees everyone's ratings), it needs a free database:
 

@@ -92,7 +92,7 @@
 
   function modeBanner() {
     if (store.LIVE) return "";
-    return '<div class="banner">Demo mode: sample bars and ratings. Your own ratings stay on this phone.</div>';
+    return '<div class="banner">Test mode: ratings you add stay on this phone until live ratings are switched on.</div>';
   }
 
   // ---------- views ----------
@@ -229,7 +229,7 @@
       '<button type="button" aria-pressed="' + (draft.worth === true) + '" class="chip big' + (draft.worth === true ? " active" : "") + '" data-set="worth" data-value="yes">👍 Yes, come</button>' +
       '<button type="button" aria-pressed="' + (draft.worth === false) + '" class="chip big' + (draft.worth === false ? " active" : "") + '" data-set="worth" data-value="no">👎 Skip it</button></div></div>' +
       '<button class="btn primary wide" data-action="submit"' + (ready ? "" : " disabled") + ">Share the vibe</button>" +
-      (store.LIVE ? "" : '<p class="muted small center">Demo mode: your rating shows on this phone only.</p>') + "</section>";
+      (store.LIVE ? "" : '<p class="muted small center">Test mode: your rating shows on this phone only.</p>') + "</section>";
   }
 
   function viewAbout() {

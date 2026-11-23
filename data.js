@@ -4,6 +4,8 @@
 window.BARS = [
   { id: "hudson-hall", name: "Hudson Hall", area: "364 Marin Blvd", kind: "Beer hall and sports bar", emoji: "🍺",
     blurb: "Big beer hall with craft brews, smoked meats and the game on." },
+  { id: "legends-fc", name: "Legends FC", area: "130 Newark Ave", kind: "Sports and cocktail bar", emoji: "⚽",
+    blurb: "Sports and cocktail bar with a giant LED screen behind the bar and DJs." },
   { id: "boots-and-bones", name: "Boots & Bones", area: "116 Newark Ave", kind: "Western bar and BBQ", emoji: "🤠",
     blurb: "Wild West BBQ spot with line dancing, and a club floor downstairs." },
   { id: "under-the-boot", name: "Under The Boot", area: "116 Newark Ave", kind: "Speakeasy lounge", emoji: "🪩",
