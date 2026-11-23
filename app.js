@@ -273,14 +273,16 @@
   }
 
   async function refresh() {
+    const firstLoad = !data && !loadError;
     try {
       data = await store.loadAll();
       loadError = null;
     } catch (e) {
       loadError = e.message || String(e);
     }
+    // Don't redraw the rate form under someone's thumb, except to replace the loading screen.
     const onRate = location.hash.indexOf("#/rate/") === 0;
-    if (!onRate) render(true);
+    if (!onRate || firstLoad) render(true);
   }
 
   app.addEventListener("click", async (e) => {
