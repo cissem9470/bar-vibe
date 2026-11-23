@@ -180,7 +180,7 @@
     return modeBanner() +
       '<a class="back" href="#/">← All bars</a>' +
       '<section class="bar-head"><span class="avatar lg">' + bar.emoji + '</span><div><h1>' + esc(bar.name) + '</h1><p class="muted">' +
-      esc(bar.area) + " · " + esc(bar.kind) + " · " + esc(bar.hours) + "</p></div></section>" +
+      esc(bar.area) + " · " + esc(bar.kind) + (bar.hours ? " · " + esc(bar.hours) : "") + "</p></div></section>" +
       '<p class="blurb">' + esc(bar.blurb) + "</p>" +
       vibe + sensorBlock + moods + recent +
       '<div class="sticky-cta"><a class="btn primary wide" href="#/rate/' + esc(bar.id) + '">I\'m here: rate the vibe</a></div>';

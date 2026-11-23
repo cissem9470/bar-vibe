@@ -17,7 +17,7 @@ Ratings count for 2 hours, and newer ones count more.
 
 ## Demo mode vs live mode
 
-Right now it runs in **demo mode**: the bars are made up, the ratings are generated samples that change through the evening, and your own ratings stay on your phone.
+Right now it lists 12 real bars around Grove Street in downtown Jersey City. Until live ratings are switched on, a rating you add stays on your own phone.
 
 To go **live** (everyone sees everyone's ratings), it needs a free database:
 

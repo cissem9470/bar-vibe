@@ -130,6 +130,7 @@
       sensors = results[1];
     } else {
       window.BARS.forEach(function (bar) {
+        if (!bar.profile) return; // real bars never get made-up ratings
         ratings = ratings.concat(demoRatingsFor(bar, now));
         sensors.push(demoSensor(bar, now));
       });

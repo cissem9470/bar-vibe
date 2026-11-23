@@ -1,67 +1,31 @@
-// Demo bars. These are made up, so the demo never misstates a real bar's vibe.
-// For a pilot, replace this list with the one or two real bars taking part
-// (and, in live mode, the same ids go in the ratings table).
+// Real bars in downtown Jersey City, around Grove Street.
+// These get no sample ratings: a bar only shows a vibe once real people rate it.
+// A bar with a "profile" field is a made-up demo bar and gets generated sample ratings.
 window.BARS = [
-  {
-    id: "copper-fox",
-    name: "The Copper Fox",
-    area: "Jersey City",
-    kind: "Cocktail lounge",
-    emoji: "🦊",
-    hours: "5 PM to 2 AM",
-    blurb: "Low lights, vinyl on the weekends, bartenders who remember your order.",
-    profile: { crowd: 3.2, sound: 2.6, moods: ["Date night", "Chill", "Lively"], worth: 0.85, sensorDb: 72 }
-  },
-  {
-    id: "dockside",
-    name: "Dockside Tap",
-    area: "Hoboken",
-    kind: "Sports bar",
-    emoji: "🏈",
-    hours: "11 AM to 2 AM",
-    blurb: "Forty screens, wings, and a crowd that lives and dies with the game.",
-    profile: { crowd: 4.4, sound: 4.3, moods: ["Sports", "Packed", "Lively"], worth: 0.7, sensorDb: 86 }
-  },
-  {
-    id: "neon-garden",
-    name: "Neon Garden",
-    area: "Lower East Side",
-    kind: "Dance bar",
-    emoji: "🪩",
-    hours: "8 PM to 4 AM",
-    blurb: "DJ from 10, small dance floor, gets going late.",
-    profile: { crowd: 4.0, sound: 4.7, moods: ["Dance", "Packed", "Lively"], worth: 0.78, sensorDb: 94 }
-  },
-  {
-    id: "quiet-owl",
-    name: "The Quiet Owl",
-    area: "Astoria",
-    kind: "Wine bar",
-    emoji: "🦉",
-    hours: "4 PM to midnight",
-    blurb: "Natural wine, board games, and room to actually talk.",
-    profile: { crowd: 1.9, sound: 1.6, moods: ["Chill", "Date night"], worth: 0.9, sensorDb: 61 }
-  },
-  {
-    id: "bodega-social",
-    name: "Bodega Social",
-    area: "Bushwick",
-    kind: "Neighborhood dive",
-    emoji: "🍻",
-    hours: "3 PM to 4 AM",
-    blurb: "Cheap beer, a jukebox with opinions, and a back patio.",
-    profile: { crowd: 3.5, sound: 3.6, moods: ["Lively", "Chill", "Sports"], worth: 0.8, sensorDb: 79 }
-  },
-  {
-    id: "harbor-rooftop",
-    name: "Harbor Rooftop",
-    area: "Weehawken",
-    kind: "Rooftop bar",
-    emoji: "🌇",
-    hours: "4 PM to 1 AM",
-    blurb: "Skyline view, sunset crowd, line at the door on Fridays.",
-    profile: { crowd: 3.8, sound: 3.0, moods: ["Date night", "Lively", "Packed"], worth: 0.74, sensorDb: 76 }
-  }
+  { id: "hudson-hall", name: "Hudson Hall", area: "364 Marin Blvd", kind: "Beer hall and sports bar", emoji: "🍺",
+    blurb: "Big beer hall with craft brews, smoked meats and the game on." },
+  { id: "boots-and-bones", name: "Boots & Bones", area: "116 Newark Ave", kind: "Western bar and BBQ", emoji: "🤠",
+    blurb: "Wild West BBQ spot with line dancing, and a club floor downstairs." },
+  { id: "under-the-boot", name: "Under The Boot", area: "116 Newark Ave", kind: "Speakeasy lounge", emoji: "🪩",
+    blurb: "DJ-driven lounge under Boots & Bones, Friday and Saturday nights." },
+  { id: "south-house", name: "South House", area: "149 Newark Ave", kind: "Southern bar and restaurant", emoji: "🍗",
+    blurb: "Huge, lively room with Southern food and a basement game room." },
+  { id: "the-ashford", name: "The Ashford", area: "145 Newark Ave", kind: "Bar and rooftop", emoji: "🌆",
+    blurb: "High ceilings, a rooftop, and a late crowd on weekends." },
+  { id: "porta", name: "Porta", area: "135 Newark Ave", kind: "Pizza bar and rooftop", emoji: "🍕",
+    blurb: "Pizza downstairs, rooftop bar and dance floor on weekend nights." },
+  { id: "grove-station", name: "The Grove Station", area: "116 Newark Ave", kind: "Gastropub", emoji: "🚉",
+    blurb: "Coffee by day, gastropub and speakeasy by night." },
+  { id: "the-archer", name: "The Archer", area: "176 Newark Ave", kind: "Cocktail bar", emoji: "🏹",
+    blurb: "Dark wood, good cocktails and duck poutine." },
+  { id: "oharas", name: "O'Hara's Bar & Grill", area: "172 1st St", kind: "Irish pub", emoji: "☘️",
+    blurb: "Big Irish pub for sports, trivia and late-night food." },
+  { id: "lucky-7", name: "Lucky 7 Tavern", area: "322 2nd St", kind: "Neighborhood bar", emoji: "🎰",
+    blurb: "Dim, whiskey-heavy local with a jukebox and BBQ bites." },
+  { id: "keyhole", name: "The Keyhole Bar", area: "242 Bay St", kind: "Dive bar", emoji: "🗝️",
+    blurb: "Cash-only dive with karaoke, games and cheap drinks." },
+  { id: "dullboy", name: "dullboy", area: "Downtown Jersey City", kind: "Cocktail bar", emoji: "🍸",
+    blurb: "Small cocktail bar a short walk from Grove Street." }
 ];
 
 // The choices a person can pick when rating the vibe.
