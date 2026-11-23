@@ -98,21 +98,34 @@
     return Object.assign(h, extra || {});
   }
   const base = () => cfg.SUPABASE_URL.replace(/\/+$/, "") + "/rest/v1/";
+  // Reads send the key in the address and no extra headers, so the browser makes one
+  // plain request instead of asking permission first. Every request gives up after 12 seconds.
+  const keyParam = () => "&apikey=" + encodeURIComponent(cfg.SUPABASE_ANON_KEY);
+  function fetchWithTimeout(url, opts) {
+    const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 12000) : null;
+    return fetch(url, Object.assign({}, opts || {}, ctrl ? { signal: ctrl.signal } : {}))
+      .finally(function () { if (timer) clearTimeout(timer); });
+  }
 
   async function liveRatings(since) {
     const url = base() + "ratings?select=bar_id,crowd,sound,mood,worth,created_at" +
-      "&created_at=gte." + encodeURIComponent(since) + "&order=created_at.desc&limit=2000";
-    const res = await fetch(url, { headers: headers() });
+      "&created_at=gte." + encodeURIComponent(since) + "&order=created_at.desc&limit=2000" + keyParam();
+    const res = await fetchWithTimeout(url);
     if (!res.ok) throw new Error("Could not load ratings (" + res.status + ")");
     return res.json();
   }
   async function liveSensors() {
     const since = new Date(Date.now() - 15 * 60000).toISOString();
     const url = base() + "sensor_readings?select=bar_id,db,created_at" +
-      "&created_at=gte." + encodeURIComponent(since) + "&order=created_at.desc&limit=500";
-    const res = await fetch(url, { headers: headers() });
-    if (!res.ok) return [];
-    return res.json();
+      "&created_at=gte." + encodeURIComponent(since) + "&order=created_at.desc&limit=500" + keyParam();
+    try {
+      const res = await fetchWithTimeout(url);
+      if (!res.ok) return [];
+      return res.json();
+    } catch (e) {
+      return [];
+    }
   }
 
   // ---------- public API ----------
@@ -164,7 +177,7 @@
       created_at: new Date().toISOString()
     };
     if (LIVE) {
-      const res = await fetch(base() + "ratings", {
+      const res = await fetchWithTimeout(base() + "ratings", {
         method: "POST",
         headers: headers({ Prefer: "return=minimal" }),
         body: JSON.stringify(Object.assign({ device_id: deviceId() }, row))
