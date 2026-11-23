@@ -21,10 +21,9 @@ Right now it lists 12 real bars around Grove Street in downtown Jersey City. Unt
 
 To go **live** (everyone sees everyone's ratings), it needs a free database:
 
-1. Create a free project at Supabase.
+1. Sign up at Supabase with "Continue with GitHub" and create a free project.
 2. In its SQL editor, run `supabase-setup.sql` from this repo.
-3. Copy the project URL and the "anon public" key into `config.js`.
-4. Replace the demo bars in `data.js` with the real pilot bars.
+3. Copy the project URL and the "publishable" key (or the older "anon public" key) into `config.js`.
 
 The sound sensor posts decibel readings to the `sensor_readings` table with the project's service key, which must stay on the sensor and never go in this repo.
 
