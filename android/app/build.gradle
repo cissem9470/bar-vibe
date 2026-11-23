@@ -1,0 +1,38 @@
+plugins { id "com.android.application" }
+
+android {
+    namespace "io.github.cissem9470.barvibe"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "io.github.cissem9470.barvibe"
+        minSdk 26
+        targetSdk 35
+        versionCode Integer.parseInt(System.getenv("VERSION_CODE") ?: "1")
+        versionName System.getenv("VERSION_NAME") ?: "0.1"
+    }
+
+    signingConfigs {
+        release {
+            def ks = System.getenv("KEYSTORE_PATH")
+            if (ks) {
+                storeFile file(ks)
+                storePassword System.getenv("KEYSTORE_PASSWORD")
+                keyAlias "barvibe"
+                keyPassword System.getenv("KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (System.getenv("KEYSTORE_PATH")) signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

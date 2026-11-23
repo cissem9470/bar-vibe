@@ -38,3 +38,11 @@ The sound sensor posts decibel readings to the `sensor_readings` table with the 
 | `config.js` | Live-mode settings |
 | `styles.css` | The look |
 | `supabase-setup.sql` | Database setup for live mode |
+
+## Android pilot app
+
+`android/` is a small Android app that opens the live site full screen, so changes to the site reach it without a new download. GitHub Actions (`.github/workflows/android.yml`) builds it on every change to `android/` and puts `bar-vibe.apk` on the "android" release:
+
+https://github.com/cissem9470/bar-vibe/releases/latest/download/bar-vibe.apk
+
+Testers open that link on an Android phone, allow installs from their browser when asked, and install. Builds are signed with a test key, so a new build installs only after the old one is uninstalled.
