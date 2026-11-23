@@ -9,8 +9,8 @@
 // public; the table rules in supabase-setup.sql only allow adding and reading
 // ratings.
 window.BAR_VIBE_CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: "",
+  SUPABASE_URL: "https://pfvfwjuoswbiegqdjpmr.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_3Q3INFFC1VtpPFuhU5mP3g_-2MzphSe",
 
   // How far back ratings count toward "right now", in minutes.
   LIVE_WINDOW_MIN: 120,

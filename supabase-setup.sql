@@ -1,9 +1,9 @@
 -- Run this once in a free Supabase project (SQL editor) to make Bar Vibe live.
--- Then put the project URL and anon public key into config.js.
+-- Then put the project URL and publishable key into config.js.
 
 create table if not exists public.ratings (
   id bigint generated always as identity primary key,
-  bar_id text not null,
+  bar_id text not null check (char_length(bar_id) <= 40),
   crowd smallint not null check (crowd between 1 and 5),
   sound smallint not null check (sound between 1 and 5),
   mood text not null check (char_length(mood) <= 20),
@@ -26,8 +26,12 @@ alter table public.ratings enable row level security;
 alter table public.sensor_readings enable row level security;
 
 -- Anyone can read ratings and add one. Nobody can edit or delete through the app.
-create policy "read ratings" on public.ratings for select using (true);
-create policy "add ratings" on public.ratings for insert with check (created_at > now() - interval '5 minutes');
+create policy "read ratings" on public.ratings for select to anon, authenticated using (true);
+create policy "add ratings" on public.ratings for insert to anon, authenticated
+  with check (created_at > now() - interval '5 minutes' and created_at < now() + interval '5 minutes');
 
 -- Anyone can read sensor readings. Only the service key (the sensor) can add them.
-create policy "read sensor" on public.sensor_readings for select using (true);
+create policy "read sensor" on public.sensor_readings for select to anon, authenticated using (true);
+
+grant select, insert on public.ratings to anon, authenticated;
+grant select on public.sensor_readings to anon, authenticated;
