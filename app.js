@@ -62,14 +62,15 @@
   }
 
   function headline(s) {
-    const c = s.crowd, n = s.sound;
-    if (s.topMood === "Dead" || c < 1.6) return "Pretty dead right now";
-    if (c >= 4.2 && n >= 4.2) return "Packed and loud";
-    if (c >= 4.2) return "Packed, but you can talk";
-    if (c >= 3.2 && n >= 3.8) return "Busy with a real buzz";
-    if (c >= 3.2) return "Busy and easygoing";
-    if (n >= 3.8) return "Not crowded, music up";
-    if (c >= 2.4) return "Steady and relaxed";
+    // Uses the same rounding as the meters so the words and the bars agree.
+    const c = Math.round(s.crowd), n = Math.round(s.sound);
+    if (s.topMood === "Dead" || c <= 1) return "Pretty dead right now";
+    if (c >= 5 && n >= 4) return "Packed and loud";
+    if (c >= 5) return "Packed, but you can talk";
+    if (c === 4 && n >= 4) return "Busy with a real buzz";
+    if (c === 4) return "Busy and easygoing";
+    if (n >= 4) return "Not crowded, music up";
+    if (c === 3) return "Steady and relaxed";
     return "Quiet and easy";
   }
 
@@ -115,7 +116,7 @@
     bars.sort(sorters[homeState.sort]);
 
     const chips = filters.map((f) =>
-      '<button class="chip' + (f === homeState.filter ? " active" : "") + '" data-filter="' + esc(f) + '">' +
+      '<button class="chip' + (f === homeState.filter ? " active" : "") + '" aria-pressed="' + (f === homeState.filter) + '" data-filter="' + esc(f) + '">' +
       (f === "All" ? "" : moodEmoji(f) + " ") + esc(f) + "</button>").join("");
 
     const cards = bars.map(({ bar, s }) => {
@@ -215,7 +216,7 @@
       return out + "</div>";
     };
     const moods = window.MOODS.map((m) =>
-      '<button type="button" class="chip' + (draft.mood === m.id ? " active" : "") + '" data-set="mood" data-value="' + esc(m.id) + '">' +
+      '<button type="button" aria-pressed="' + (draft.mood === m.id) + '" class="chip' + (draft.mood === m.id ? " active" : "") + '" data-set="mood" data-value="' + esc(m.id) + '">' +
       m.emoji + " " + esc(m.id) + "</button>").join("");
     const ready = draft.crowd && draft.sound && draft.mood && draft.worth !== null;
 
@@ -225,8 +226,8 @@
       '<div class="q"><h3>How loud is it?</h3>' + scale("sound", window.SOUND_LABELS) + "</div>" +
       '<div class="q"><h3>What\'s the mood?</h3><div class="chips wrap">' + moods + "</div></div>" +
       '<div class="q"><h3>Would you tell a friend to come now?</h3><div class="yesno">' +
-      '<button type="button" class="chip big' + (draft.worth === true ? " active" : "") + '" data-set="worth" data-value="yes">👍 Yes, come</button>' +
-      '<button type="button" class="chip big' + (draft.worth === false ? " active" : "") + '" data-set="worth" data-value="no">👎 Skip it</button></div></div>' +
+      '<button type="button" aria-pressed="' + (draft.worth === true) + '" class="chip big' + (draft.worth === true ? " active" : "") + '" data-set="worth" data-value="yes">👍 Yes, come</button>' +
+      '<button type="button" aria-pressed="' + (draft.worth === false) + '" class="chip big' + (draft.worth === false ? " active" : "") + '" data-set="worth" data-value="no">👎 Skip it</button></div></div>' +
       '<button class="btn primary wide" data-action="submit"' + (ready ? "" : " disabled") + ">Share the vibe</button>" +
       (store.LIVE ? "" : '<p class="muted small center">Demo mode: your rating shows on this phone only.</p>') + "</section>";
   }
