@@ -92,11 +92,10 @@
 
   // ---------- live (Supabase REST) ----------
   function headers(extra) {
-    return Object.assign({
-      apikey: cfg.SUPABASE_ANON_KEY,
-      Authorization: "Bearer " + cfg.SUPABASE_ANON_KEY,
-      "Content-Type": "application/json"
-    }, extra || {});
+    const h = { apikey: cfg.SUPABASE_ANON_KEY, "Content-Type": "application/json" };
+    // Older "anon" keys are JWTs and also go in Authorization; newer "publishable" keys don't.
+    if (/^eyJ/.test(cfg.SUPABASE_ANON_KEY)) h.Authorization = "Bearer " + cfg.SUPABASE_ANON_KEY;
+    return Object.assign(h, extra || {});
   }
   const base = () => cfg.SUPABASE_URL.replace(/\/+$/, "") + "/rest/v1/";
 

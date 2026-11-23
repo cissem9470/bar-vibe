@@ -5,7 +5,7 @@
 //
 // To make ratings LIVE (everyone sees everyone's ratings), create a free
 // Supabase project, run supabase-setup.sql in its SQL editor, then paste the
-// project URL and the "anon public" key below. The anon key is meant to be
+// project URL and the "publishable" key (or the older "anon public" key) below. The anon key is meant to be
 // public; the table rules in supabase-setup.sql only allow adding and reading
 // ratings.
 window.BAR_VIBE_CONFIG = {
