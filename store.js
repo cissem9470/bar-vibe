@@ -109,7 +109,7 @@
   }
 
   async function liveRatings(since) {
-    const url = base() + "ratings?select=bar_id,crowd,sound,mood,worth,created_at" +
+    const url = base() + "ratings?select=bar_id,crowd,sound,mood,music,worth,created_at" +
       "&created_at=gte." + encodeURIComponent(since) + "&order=created_at.desc&limit=2000" + keyParam();
     const res = await fetchWithTimeout(url);
     if (!res.ok) throw new Error("Could not load ratings (" + res.status + ")");
@@ -176,6 +176,7 @@
       worth: rating.worth,
       created_at: new Date().toISOString()
     };
+    if (rating.music) row.music = rating.music;
     if (LIVE) {
       const res = await fetchWithTimeout(base() + "ratings", {
         method: "POST",

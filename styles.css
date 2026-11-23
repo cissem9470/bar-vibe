@@ -54,7 +54,9 @@ main { max-width: 960px; margin: 0 auto; padding: 16px 16px 120px; outline: none
 .hero { margin: 6px 0 14px; }
 .loading { color: var(--muted); padding: 40px 0; text-align: center; }
 
-.controls { display: flex; gap: 8px; margin-bottom: 10px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.controls .search { flex: 1 1 100%; }
+.controls .sort { flex: 1 1 0; min-width: 0; }
 .search, .sort {
   background: var(--bg-2); color: var(--text); border: 1px solid var(--line); border-radius: 12px;
   padding: 10px 12px; font-size: 16px; min-width: 0;

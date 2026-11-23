@@ -4,13 +4,14 @@
   const store = window.VibeStore;
   let data = null;
   let loadError = null;
-  let homeState = { filter: "All", sort: "best", q: "" };
+  let homeState = { filter: "All", sort: "best", q: "", music: "" };
   let draft = null;
 
   // ---------- helpers ----------
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const barById = (id) => window.BARS.find((b) => b.id === id);
   const moodEmoji = (m) => (window.MOODS.find((x) => x.id === m) || {}).emoji || "";
+  const musicEmoji = (m) => (window.MUSIC.find((x) => x.id === m) || {}).emoji || "🎶";
 
   function ago(iso) {
     const min = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
@@ -33,6 +34,8 @@
     if (!rs.length) return { count: 0 };
     let w = 0, crowd = 0, sound = 0, worthYes = 0, worthW = 0;
     const moods = {};
+    const music = {};
+    let musicW = 0;
     rs.forEach((r) => {
       const ageMin = (Date.now() - Date.parse(r.created_at)) / 60000;
       const k = Math.exp(-ageMin / 45);
@@ -42,7 +45,11 @@
       worthW += k;
       if (r.worth) worthYes += k;
       moods[r.mood] = (moods[r.mood] || 0) + k;
+      if (r.music) { music[r.music] = (music[r.music] || 0) + k; musicW += k; }
     });
+    const musicList = Object.keys(music)
+      .map((m) => ({ music: m, share: music[m] / musicW }))
+      .sort((a, b) => b.share - a.share);
     const moodList = Object.keys(moods)
       .map((m) => ({ mood: m, share: moods[m] / w }))
       .sort((a, b) => b.share - a.share);
@@ -53,6 +60,8 @@
       worth: worthW ? worthYes / worthW : 0,
       moods: moodList,
       topMood: moodList[0] && moodList[0].mood,
+      music: musicList,
+      topMusic: musicList[0] && musicList[0].music,
       last: rs[0].created_at,
       sensor: slot.sensor
     };
@@ -108,6 +117,9 @@
     if (homeState.filter !== "All") {
       bars = bars.filter((x) => x.s.count && x.s.moods.some((m) => m.mood === homeState.filter && m.share >= 0.2));
     }
+    if (homeState.music) {
+      bars = bars.filter((x) => x.s.count && x.s.music && x.s.music.some((m) => m.music === homeState.music && m.share >= 0.2));
+    }
     const sorters = {
       best: (a, b) => (b.s.worth || 0) * Math.log(1 + (b.s.count || 0)) - (a.s.worth || 0) * Math.log(1 + (a.s.count || 0)),
       busiest: (a, b) => (b.s.crowd || 0) - (a.s.crowd || 0),
@@ -131,6 +143,7 @@
         '<p class="headline">' + esc(s.headline) + "</p>" +
         '<div class="meters">' + meter(s.crowd, "Crowd", "crowd") + meter(s.sound, "Sound", "sound") + "</div>" +
         '<div class="card-foot"><span class="mood-chip">' + moodEmoji(s.topMood) + " " + esc(s.topMood) + "</span>" +
+        (s.topMusic ? '<span class="mood-chip">' + musicEmoji(s.topMusic) + " " + esc(s.topMusic) + "</span>" : "") +
         '<span class="worth">' + Math.round(s.worth * 100) + "% say go now</span></div>" +
         '<p class="muted small">' + s.count + (s.count === 1 ? " rating" : " ratings") + " · updated " + ago(s.last) + "</p></a>";
     }).join("");
@@ -141,7 +154,10 @@
       '" data-input="q" aria-label="Search bars"><select class="sort" data-input="sort" aria-label="Sort bars">' +
       '<option value="best"' + (homeState.sort === "best" ? " selected" : "") + ">Best right now</option>" +
       '<option value="busiest"' + (homeState.sort === "busiest" ? " selected" : "") + ">Busiest</option>" +
-      '<option value="quietest"' + (homeState.sort === "quietest" ? " selected" : "") + ">Quietest</option></select></div>" +
+      '<option value="quietest"' + (homeState.sort === "quietest" ? " selected" : "") + ">Quietest</option></select>" +
+      '<select class="sort" data-input="music" aria-label="Filter by music"><option value="">Any music</option>' +
+      window.MUSIC.map((m) => '<option value="' + esc(m.id) + '"' + (homeState.music === m.id ? " selected" : "") + ">" + m.emoji + " " + esc(m.id) + "</option>").join("") +
+      "</select></div>" +
       '<div class="chips" role="group" aria-label="Filter by mood">' + chips + "</div>" +
       (cards ? '<div class="grid">' + cards + "</div>" : '<section class="empty"><p>No bars match that right now.</p></section>');
   }
@@ -169,11 +185,17 @@
           Math.round(m.share * 100) + '%"></div></div><span class="pct">' + Math.round(m.share * 100) + "%</span></div>").join("") + "</div>"
       : "";
 
+    const musicPanel = s.count && s.music.length
+      ? '<div class="panel"><p class="eyebrow">What\'s playing</p>' + s.music.slice(0, 4).map((m) =>
+          '<div class="bar-row"><span>' + musicEmoji(m.music) + " " + esc(m.music) + '</span><div class="track"><div class="fill" style="width:' +
+          Math.round(m.share * 100) + '%"></div></div><span class="pct">' + Math.round(m.share * 100) + "%</span></div>").join("") + "</div>"
+      : "";
+
     const recent = s.count
       ? '<div class="panel"><p class="eyebrow">Latest from inside</p><ul class="feed">' +
         data[id].ratings.slice(0, 8).map((r) =>
           "<li><span>" + moodEmoji(r.mood) + " " + esc(window.CROWD_LABELS[r.crowd]) + ", " + esc(window.SOUND_LABELS[r.sound].toLowerCase()) +
-          (r.worth ? " · says come" : " · says skip") + '</span><span class="muted small">' + ago(r.created_at) + "</span></li>").join("") +
+          (r.music ? " · " + esc(r.music) : "") + (r.worth ? " · says come" : " · says skip") + '</span><span class="muted small">' + ago(r.created_at) + "</span></li>").join("") +
         "</ul></div>"
       : "";
 
@@ -182,7 +204,7 @@
       '<section class="bar-head"><span class="avatar lg">' + bar.emoji + '</span><div><h1>' + esc(bar.name) + '</h1><p class="muted">' +
       esc(bar.area) + " · " + esc(bar.kind) + (bar.hours ? " · " + esc(bar.hours) : "") + "</p></div></section>" +
       '<p class="blurb">' + esc(bar.blurb) + "</p>" +
-      vibe + sensorBlock + moods + recent +
+      vibe + sensorBlock + musicPanel + moods + recent +
       '<div class="sticky-cta"><a class="btn primary wide" href="#/rate/' + esc(bar.id) + '">I\'m here: rate the vibe</a></div>';
   }
 
@@ -204,7 +226,7 @@
         esc(bar.name) + " a few minutes ago.</p><p class=\"muted\">You can rate it again in " + wait + " min.</p><a class=\"btn\" href=\"#/bar/" +
         esc(id) + '">Back to the bar</a></section>';
     }
-    if (!draft || draft.bar_id !== id) draft = { bar_id: id, crowd: 0, sound: 0, mood: "", worth: null };
+    if (!draft || draft.bar_id !== id) draft = { bar_id: id, crowd: 0, sound: 0, mood: "", music: "", worth: null };
 
     const scale = (field, labels) => {
       let out = '<div class="scale" role="radiogroup">';
@@ -218,13 +240,17 @@
     const moods = window.MOODS.map((m) =>
       '<button type="button" aria-pressed="' + (draft.mood === m.id) + '" class="chip' + (draft.mood === m.id ? " active" : "") + '" data-set="mood" data-value="' + esc(m.id) + '">' +
       m.emoji + " " + esc(m.id) + "</button>").join("");
+    const musicChips = window.MUSIC.map((m) =>
+      '<button type="button" aria-pressed="' + (draft.music === m.id) + '" class="chip' + (draft.music === m.id ? " active" : "") + '" data-set="music" data-value="' + esc(m.id) + '">' +
+      m.emoji + " " + esc(m.id) + "</button>").join("");
     const ready = draft.crowd && draft.sound && draft.mood && draft.worth !== null;
 
     return '<a class="back" href="#/bar/' + esc(id) + '">← ' + esc(bar.name) + "</a>" +
-      '<section class="rate"><h1>How\'s ' + esc(bar.name) + " right now?</h1><p class=\"muted\">Four taps. Takes ten seconds.</p>" +
+      '<section class="rate"><h1>How\'s ' + esc(bar.name) + " right now?</h1><p class=\"muted\">A few taps. Takes ten seconds.</p>" +
       '<div class="q"><h3>How crowded is it?</h3>' + scale("crowd", window.CROWD_LABELS) + "</div>" +
       '<div class="q"><h3>How loud is it?</h3>' + scale("sound", window.SOUND_LABELS) + "</div>" +
       '<div class="q"><h3>What\'s the mood?</h3><div class="chips wrap">' + moods + "</div></div>" +
+      '<div class="q"><h3>What\'s playing? <span class="muted small">(skip if you can\'t tell)</span></h3><div class="chips wrap">' + musicChips + "</div></div>" +
       '<div class="q"><h3>Would you tell a friend to come now?</h3><div class="yesno">' +
       '<button type="button" aria-pressed="' + (draft.worth === true) + '" class="chip big' + (draft.worth === true ? " active" : "") + '" data-set="worth" data-value="yes">👍 Yes, come</button>' +
       '<button type="button" aria-pressed="' + (draft.worth === false) + '" class="chip big' + (draft.worth === false ? " active" : "") + '" data-set="worth" data-value="no">👎 Skip it</button></div></div>' +
@@ -291,7 +317,8 @@
     if (t.dataset.filter) { homeState.filter = t.dataset.filter; render(true); return; }
     if (t.dataset.set) {
       const f = t.dataset.set, v = t.dataset.value;
-      draft[f] = f === "worth" ? v === "yes" : (f === "mood" ? v : Number(v));
+      if (f === "music") draft.music = draft.music === v ? "" : v; // tap again to clear
+      else draft[f] = f === "worth" ? v === "yes" : (f === "mood" ? v : Number(v));
       render(true);
       return;
     }

@@ -7,6 +7,7 @@ create table if not exists public.ratings (
   crowd smallint not null check (crowd between 1 and 5),
   sound smallint not null check (sound between 1 and 5),
   mood text not null check (char_length(mood) <= 20),
+  music text check (music is null or char_length(music) <= 30),
   worth boolean not null,
   device_id text check (char_length(device_id) <= 64),
   created_at timestamptz not null default now()

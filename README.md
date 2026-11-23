@@ -8,9 +8,9 @@ It's a plain website (HTML, CSS and JavaScript, no server), hosted free on GitHu
 
 ## What's in it
 
-- **Bars list**: every bar with its vibe right now, crowd and sound meters, top mood and "% say go now". Search, mood filters, and sort by best, busiest or quietest.
+- **Bars list**: every bar with its vibe right now, crowd and sound meters, top mood and "% say go now". Search, mood and music filters, and sort by best, busiest or quietest.
 - **Bar page**: the full read on one bar, the in-bar sound sensor level, mood breakdown and the latest ratings from inside.
-- **Rate the vibe**: four taps (crowd, sound, mood, would you tell a friend to come). One rating per phone per bar every 20 minutes.
+- **Rate the vibe**: a few taps (crowd, sound, mood, what music is playing, would you tell a friend to come). One rating per phone per bar every 20 minutes.
 - **For bars**: a short pitch page to show a bar owner for the pilot.
 
 Ratings count for 2 hours, and newer ones count more.

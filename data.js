@@ -41,5 +41,19 @@ window.MOODS = [
   { id: "Dead", emoji: "🦗" }
 ];
 
+// What's playing. Optional when rating.
+window.MUSIC = [
+  { id: "House", emoji: "🏠" },
+  { id: "Techno / Rave", emoji: "⚡" },
+  { id: "Hip hop / Rap", emoji: "🎤" },
+  { id: "R&B", emoji: "💜" },
+  { id: "Afrobeats", emoji: "🥁" },
+  { id: "Latin / Reggaeton", emoji: "💃" },
+  { id: "Pop / Top 40", emoji: "📻" },
+  { id: "Rock", emoji: "🎸" },
+  { id: "Live band", emoji: "🎷" },
+  { id: "Jukebox / Mix", emoji: "🎶" }
+];
+
 window.CROWD_LABELS = ["", "Empty", "Quiet", "Steady", "Busy", "Packed"];
 window.SOUND_LABELS = ["", "Silent", "Easy to talk", "Background music", "Loud", "Can't hear yourself"];
