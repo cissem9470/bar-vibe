@@ -25,7 +25,7 @@ To go **live** (everyone sees everyone's ratings), it needs a free database:
 2. In its SQL editor, run `supabase-setup.sql` from this repo.
 3. Copy the project URL and the "publishable" key (or the older "anon public" key) into `config.js`.
 
-The sound sensor posts decibel readings to the `sensor_readings` table with the project's service key, which must stay on the sensor and never go in this repo.
+The sound sensor is a phone running `sensor.html` (see below). It never holds a secret key: it sends a pairing code to the `now-playing` edge function, which writes to `sensor_readings` and `now_playing`.
 
 ## "Now playing" sensor phone
 
