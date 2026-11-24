@@ -67,7 +67,8 @@
       '<section class="panel"><h3>Activity</h3><div class="log">' +
       (logLines.length ? logLines.map((l) => "<p>" + esc(l) + "</p>").join("") : '<p class="muted">Nothing yet.</p>') +
       "</div></section>" +
-      '<p class="muted small center">Keep this page open and the phone plugged in. Clips are only used to match the song and are not kept.</p>';
+      '<p class="muted small center">Keep this page open and the phone plugged in. Clips are only used to match the song and are not kept.</p>' +
+      (/iPhone|iPad/.test(navigator.userAgent) ? '<p class="muted small center">On iPhone: use this page in Safari (not from the home screen), and set Settings, Display &amp; Brightness, Auto-Lock to Never while it runs. The mic stops if the screen locks or you switch apps.</p>' : "");
   }
 
   // Loudness: average level over the clip, as a rough room dB figure.
@@ -111,7 +112,7 @@
     if (!running) return;
     status = "Listening…"; render();
     try {
-      if (ctx && ctx.state === "suspended") await ctx.resume();
+      if (ctx && ctx.state !== "running") await ctx.resume().catch(() => {});
       const clip = await recordClip();
       status = "Sending…"; render();
       const ext = /mp4/.test(clip.blob.type) ? "m4a" : /ogg/.test(clip.blob.type) ? "ogg" : "webm";
@@ -166,21 +167,40 @@
   async function keepAwake() {
     try { if ("wakeLock" in navigator && running) wake = await navigator.wakeLock.request("screen"); } catch (e) {}
   }
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && running) keepAwake(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible" || !running) return;
+    keepAwake();
+    if (stream && stream.getAudioTracks().some((t) => t.readyState === "ended")) {
+      stop(); status = "The microphone stopped while the screen was off. Tap Start listening again."; render();
+    }
+  });
 
   async function start() {
+    // Safari only lets sound start from a tap, so the audio engine and the
+    // screen lock are set up right away, before asking for the mic.
+    try {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state !== "running") ctx.resume().catch(() => {});
+    } catch (e) { ctx = null; }
+    running = true;
+    keepAwake();
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
     } catch (e) {
-      status = "Microphone not allowed. Allow it in the browser settings and try again.";
+      running = false;
+      if (ctx) ctx.close().catch(() => {});
+      ctx = null;
+      status = "Microphone not allowed. Allow it for this site in the browser settings and try again.";
       render(); return;
     }
-    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
     analyser = ctx.createAnalyser();
     analyser.fftSize = 2048;
     ctx.createMediaStreamSource(stream).connect(analyser);
-    running = true;
-    await keepAwake();
+    // iPhones cut the mic when the screen locks or Safari goes to the background.
+    stream.getAudioTracks().forEach((t) => {
+      t.onended = () => { if (running) { stop(); status = "The microphone stopped (screen locked or app switched). Tap Start listening again."; render(); log("Mic stopped"); } };
+    });
     log("Started");
     checkOnce();
   }
