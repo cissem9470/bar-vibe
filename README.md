@@ -39,6 +39,10 @@ The sound sensor posts decibel readings to the `sensor_readings` table with the 
 | `styles.css` | The look |
 | `supabase-setup.sql` | Database setup for live mode |
 
+## Rating only at the bar
+
+To rate, the phone shares its location once. A rating goes through only if the phone is within 150 m of the bar (`NEAR_METERS` in config.js), or was in the last 5 minutes (`NEAR_WINDOW_MIN`). Phone location indoors is rough, so this can't tell apart bars next door to each other, and someone determined can fake their location. Each bar's `lat` and `lng` are in data.js.
+
 ## Android pilot app
 
 `android/` is a small Android app that opens the live site full screen, so changes to the site reach it without a new download. GitHub Actions (`.github/workflows/android.yml`) builds it on every change to `android/` and puts `bar-vibe.apk` on the "android" release:

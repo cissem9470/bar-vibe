@@ -16,5 +16,10 @@ window.BAR_VIBE_CONFIG = {
   LIVE_WINDOW_MIN: 120,
 
   // A phone can rate the same bar again after this many minutes.
-  RATE_COOLDOWN_MIN: 20
+  RATE_COOLDOWN_MIN: 20,
+
+  // To rate a bar, the phone has to be within this many meters of it...
+  NEAR_METERS: 150,
+  // ...or have been that close in the last this many minutes.
+  NEAR_WINDOW_MIN: 5
 };

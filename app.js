@@ -13,6 +13,83 @@
   const moodEmoji = (m) => (window.MOODS.find((x) => x.id === m) || {}).emoji || "";
   const musicEmoji = (m) => (window.MUSIC.find((x) => x.id === m) || {}).emoji || "🎶";
 
+  // ---------- location check: you can only rate a bar you're at ----------
+  const cfg = window.BAR_VIBE_CONFIG || {};
+  const NEAR_M = cfg.NEAR_METERS || 150;
+  const NEAR_MS = (cfg.NEAR_WINDOW_MIN || 5) * 60 * 1000;
+  const nearAt = {}; // barId -> last time this phone was near it (backup if storage is off)
+  let geo = { barId: null, status: "idle", dist: null };
+
+  function distM(lat1, lng1, lat2, lng2) {
+    const R = 6371000, r = Math.PI / 180;
+    const a = Math.sin((lat2 - lat1) * r / 2) ** 2 +
+      Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin((lng2 - lng1) * r / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
+  function lastNear(id) {
+    let t = nearAt[id] || 0;
+    try { t = Math.max(t, Number(localStorage.getItem("bv-near-" + id)) || 0); } catch (e) {}
+    return t;
+  }
+  const recentlyNear = (id) => Date.now() - lastNear(id) < NEAR_MS;
+  // Remember every bar this position is close to, so leaving still lets you rate for a few minutes.
+  function markNear(pos) {
+    const c = pos.coords, slack = Math.min(c.accuracy || 0, 100), now = Date.now();
+    window.BARS.forEach((b) => {
+      if (b.lat == null) return;
+      if (distM(c.latitude, c.longitude, b.lat, b.lng) - slack <= NEAR_M) {
+        nearAt[b.id] = now;
+        try { localStorage.setItem("bv-near-" + b.id, String(now)); } catch (e) {}
+      }
+    });
+  }
+  function howFar(m) {
+    const mi = m / 1609.34;
+    return mi < 0.2 ? Math.round(m * 3.281 / 50) * 50 + " ft" : mi.toFixed(1) + " miles";
+  }
+  function checkLocation(id) {
+    if (!navigator.geolocation) { geo = { barId: id, status: "error", dist: null }; render(true); return; }
+    geo = { barId: id, status: "checking", dist: null };
+    render(true);
+    navigator.geolocation.getCurrentPosition((pos) => {
+      markNear(pos);
+      const b = barById(id);
+      const d = b && b.lat != null ? distM(pos.coords.latitude, pos.coords.longitude, b.lat, b.lng) : null;
+      geo = { barId: id, status: recentlyNear(id) ? "near" : "far", dist: d };
+      if (location.hash === "#/rate/" + id) render(true);
+    }, (err) => {
+      geo = { barId: id, status: err && err.code === 1 ? "denied" : "error", dist: null };
+      if (location.hash === "#/rate/" + id) render(true);
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 });
+  }
+  // If location is already allowed, note quietly which bars you're near while the app is open.
+  function quietLocate() {
+    if (!navigator.geolocation || !navigator.permissions || !navigator.permissions.query) return;
+    navigator.permissions.query({ name: "geolocation" }).then((p) => {
+      if (p.state === "granted") navigator.geolocation.getCurrentPosition(markNear, function () {}, { maximumAge: 60000, timeout: 15000 });
+    }).catch(function () {});
+  }
+  function locationGate(bar) {
+    const id = bar.id;
+    if (geo.barId !== id || geo.status === "idle" || geo.status === "near") setTimeout(() => checkLocation(id), 0);
+    const back = '<a class="back" href="#/bar/' + esc(id) + '">← ' + esc(bar.name) + "</a>";
+    const again = '<button class="btn" data-action="locate" data-bar="' + esc(id) + '">Check again</button>';
+    let body;
+    if (geo.barId === id && geo.status === "far") {
+      body = "<p>You look " + (geo.dist != null ? "about " + howFar(geo.dist) + " from " : "too far from ") + esc(bar.name) + ".</p>" +
+        '<p class="muted">Ratings only come from people at the bar, or who were there in the last ' + Math.round(NEAR_MS / 60000) + " minutes.</p>" + again;
+    } else if (geo.barId === id && geo.status === "denied") {
+      body = "<p>Bar Vibe needs your location to check you're at " + esc(bar.name) + ".</p>" +
+        '<p class="muted">Turn on location for Bar Vibe in your phone\'s settings, then try again. It\'s only used to check you\'re at the bar.</p>' + again;
+    } else if (geo.barId === id && geo.status === "error") {
+      body = "<p>Couldn't find your location.</p><p class=\"muted\">Make sure location is on, then try again.</p>" + again;
+    } else {
+      body = "<p>Checking you're at " + esc(bar.name) + "…</p>" +
+        '<p class="muted">Ratings only come from people at the bar, so your phone may ask to share your location.</p>';
+    }
+    return back + '<section class="empty">' + body + "</section>";
+  }
+
   function ago(iso) {
     const min = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
     if (min < 1) return "just now";
@@ -226,6 +303,7 @@
         esc(bar.name) + " a few minutes ago.</p><p class=\"muted\">You can rate it again in " + wait + " min.</p><a class=\"btn\" href=\"#/bar/" +
         esc(id) + '">Back to the bar</a></section>';
     }
+    if (bar.lat != null && !recentlyNear(id)) return locationGate(bar);
     if (!draft || draft.bar_id !== id) draft = { bar_id: id, crowd: 0, sound: 0, mood: "", music: "", worth: null };
 
     const scale = (field, labels) => {
@@ -263,7 +341,7 @@
       '<section class="about"><h1>Bar Vibe for bars</h1>' +
       '<p class="lead">People decide where to go out from their couch. Bar Vibe shows them what your room feels like right now, so the right crowd walks in.</p>' +
       '<div class="panel"><h3>How it works</h3><ol>' +
-      "<li><strong>Live ratings.</strong> Guests already inside tap in the crowd, the sound and the mood in ten seconds.</li>" +
+      "<li><strong>Live ratings.</strong> Guests already inside tap in the crowd, the sound and the mood in ten seconds. The phone checks they\'re really at the bar, so ratings can\'t come from someone across town.</li>" +
       "<li><strong>Sound sensor.</strong> A small listening device measures how loud the room is. It reads volume only and never records conversations.</li>" +
       "<li><strong>One clear answer.</strong> People nearby see “Busy with a real buzz” and how many say come now.</li></ol></div>" +
       '<div class="panel"><h3>What your bar gets</h3><ul>' +
@@ -299,6 +377,7 @@
   }
 
   async function refresh() {
+    quietLocate();
     const firstLoad = !data && !loadError;
     try {
       data = await store.loadAll();
@@ -323,7 +402,9 @@
       return;
     }
     if (t.dataset.action === "reload") { await refresh(); return; }
+    if (t.dataset.action === "locate") { checkLocation(t.dataset.bar); return; }
     if (t.dataset.action === "submit" && draft) {
+      if (!recentlyNear(draft.bar_id)) { geo = { barId: null, status: "idle", dist: null }; render(true); return; }
       t.disabled = true;
       t.textContent = "Sharing…";
       try {
@@ -348,7 +429,7 @@
     render(true);
   });
 
-  window.addEventListener("hashchange", () => { render(false); window.scrollTo(0, 0); });
+  window.addEventListener("hashchange", () => { geo = { barId: null, status: "idle", dist: null }; render(false); window.scrollTo(0, 0); });
 
   render(false);
   refresh();
