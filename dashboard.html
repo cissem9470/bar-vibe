@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bar Vibe Dashboard</title>
+  <meta name="description" content="Bar Vibe dashboard for bar owners: your ratings, busiest hours, mood and music.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#14111c">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css?v=11">
+  <link rel="stylesheet" href="dashboard.css?v=11">
+</head>
+<body>
+  <header class="topbar">
+    <a href="./" class="brand" aria-label="Bar Vibe home">
+      <span class="brand-dot"></span>Bar Vibe
+    </a>
+    <nav class="topnav">
+      <a href="./">Bars</a>
+      <a href="dashboard.html" class="active">Dashboard</a>
+    </nav>
+  </header>
+
+  <main id="dash" tabindex="-1"><p class="loading">Loading…</p></main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="config.js?v=11"></script>
+  <script src="data.js?v=11"></script>
+  <script src="dashboard.js?v=11"></script>
+</body>
+</html>

@@ -347,7 +347,8 @@
       '<div class="panel"><h3>What your bar gets</h3><ul>' +
       "<li>Your busy nights show up as busy, which draws more people in.</li>" +
       "<li>Quiet nights become a selling point for people who want to talk.</li>" +
-      "<li>A simple view of when your room fills up, hour by hour.</li></ul></div>" +
+      "<li>A simple view of when your room fills up, hour by hour.</li></ul>" +
+      '<p><a class="btn" href="dashboard.html">Bar owners: open your dashboard</a></p></div>' +
       '<div class="panel"><h3>The pilot</h3><p>We\'re starting with one or two bars. It\'s free during the pilot: a table card with a QR code for guests, and an optional sound sensor.</p></div>' +
       "</section>";
   }

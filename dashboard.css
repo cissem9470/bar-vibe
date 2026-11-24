@@ -1,0 +1,45 @@
+/* Dashboard page. Builds on styles.css. */
+#dash h1 { margin: 6px 0 2px; font-size: 26px; }
+#dash h2 { margin: 26px 0 10px; font-size: 20px; }
+#dash h3 { margin: 0 0 8px; font-size: 16px; }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin: 12px 0; }
+.panel p { margin: 6px 0; }
+.dash-signin { max-width: 460px; margin: 24px auto; }
+.dash-signin form { margin: 14px 0 6px; }
+.dash-error { color: #ffb3bb; background: rgba(255, 95, 109, 0.12); border: 1px solid rgba(255, 95, 109, 0.35); border-radius: 12px; padding: 8px 12px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; font-size: 14px; color: var(--muted); }
+.field input, .field select {
+  background: var(--bg-2); color: var(--text); border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 14px; font-size: 16px; width: 100%; font-family: inherit;
+}
+.field input:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.dash-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.dash-head p { margin: 0; }
+.dash-bar-name { margin: 6px 12px 6px 0 !important; }
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 12px 0; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
+.tile-big { font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 4px; }
+.cols { display: flex; align-items: flex-end; gap: 2px; height: 120px; margin-top: 10px; }
+.col { flex: 1 1 0; height: 100%; display: flex; align-items: flex-end; min-width: 0; }
+.col-fill { width: 100%; min-height: 2px; background: linear-gradient(180deg, var(--accent), var(--accent-2)); border-radius: 3px 3px 0 0; }
+.cols-axis { display: flex; justify-content: space-between; margin-top: 6px; }
+.dash-two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+#dash .bar-row { grid-template-columns: 110px 1fr 100px; }
+#dash .pct { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dash-feed { list-style: none; margin: 0; padding: 0; }
+.dash-feed li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.dash-feed li:first-child { border-top: 0; }
+.dash-feed li .small { flex: 0 0 auto; }
+.admin { border-top: 1px dashed var(--line); margin-top: 28px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; align-items: end; }
+.form-grid .wide-field, .form-grid .btn { grid-column: 1 / -1; }
+.owner-list { list-style: none; margin: 0; padding: 0; }
+.owner-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.owner-list li:first-child { border-top: 0; }
+.small-btn { padding: 8px 12px; font-size: 14px; flex: 0 0 auto; }
+.link-btn { background: none; border: 0; color: var(--accent); padding: 0; font: inherit; cursor: pointer; text-decoration: underline; }
+@media (max-width: 720px) {
+  .tiles { grid-template-columns: 1fr 1fr; }
+  .dash-two, .form-grid { grid-template-columns: 1fr; }
+  #dash .bar-row { grid-template-columns: 84px 1fr 92px; font-size: 14px; }
+}

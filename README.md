@@ -38,6 +38,7 @@ The sound sensor posts decibel readings to the `sensor_readings` table with the 
 | `config.js` | Live-mode settings |
 | `styles.css` | The look |
 | `supabase-setup.sql` | Database setup for live mode |
+| `dashboard.html`, `dashboard.js`, `dashboard.css` | Bar owner and admin dashboard |
 
 ## Rating only at the bar
 
@@ -50,3 +51,17 @@ To rate, the phone shares its location once. A rating goes through only if the p
 https://github.com/cissem9470/bar-vibe/releases/latest/download/bar-vibe.apk
 
 Testers open that link on an Android phone, allow installs from their browser when asked, and install. Builds are signed with a test key, so a new build installs only after the old one is uninstalled.
+
+## Bar owner dashboard
+
+`dashboard.html` is a separate sign-in page. There is no password: you type your email and get a sign-in link.
+
+- **Bar owners** see only their own bar: ratings per day, busiest hours, weekdays, mood and music mix, and the latest ratings.
+- **Admins** see every bar, can add or hide bars, and link an owner's email to a bar.
+
+The database enforces this, not the page. Rating history is only readable by the bar's linked owner and admins; the public app only sees the last 3 hours. Which phone sent a rating is never readable from the site. Admins are added only in the Supabase SQL editor (see the end of `supabase-setup.sql`).
+
+Setup in the Supabase dashboard, once:
+
+1. **Authentication → URL Configuration:** set Site URL to `https://cissem9470.github.io/bar-vibe/dashboard.html` and add it under Redirect URLs.
+2. **Authentication → Emails → SMTP Settings:** Supabase's built-in email only reaches members of your Supabase team. Before owners can sign in, connect an email sender (for example a free Resend or Brevo account).

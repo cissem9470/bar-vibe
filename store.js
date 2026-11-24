@@ -131,13 +131,33 @@
   // ---------- public API ----------
   const myRatings = () => safeGet(LOCAL_KEY, []);
 
+  // Bars come from the database when it is switched on, so new bars show up without a site
+  // update. If that fails, the list in data.js is used.
+  async function liveBars() {
+    try {
+      const url = base() + "bars?select=id,name,area,kind,emoji,blurb,lat,lng" +
+        "&active=is.true&order=sort.asc,name.asc" + keyParam();
+      const res = await fetchWithTimeout(url);
+      if (!res.ok) return;
+      const rows = await res.json();
+      if (!Array.isArray(rows) || !rows.length) return;
+      const fallback = {};
+      (window.BARS || []).forEach(function (b) { fallback[b.id] = b; });
+      window.BARS = rows.map(function (r) {
+        const b = Object.assign({}, fallback[r.id] || {}, r);
+        if (r.lat == null) { delete b.lat; delete b.lng; }
+        return b;
+      });
+    } catch (e) {}
+  }
+
   async function loadAll() {
     const now = Date.now();
     const since = new Date(now - WINDOW_MS).toISOString();
     let ratings = [];
     let sensors = [];
     if (LIVE) {
-      const results = await Promise.all([liveRatings(since), liveSensors()]);
+      const results = await Promise.all([liveRatings(since), liveSensors(), liveBars()]);
       ratings = results[0];
       sensors = results[1];
     } else {
