@@ -44,7 +44,7 @@
         '<p class="muted small">The code comes from the Bar Vibe dashboard (admin) and ties this phone to one bar.</p></section>';
       return;
     }
-    const barName = barNames[settings.bar] || settings.bar || "Not checked yet";
+    const barName = barNames[settings.bar] || settings.bar || "Your bar (shows after the first check)";
     root.innerHTML =
       '<section class="panel"><p class="eyebrow">This phone is the sensor for</p><h2>' + esc(barName) + "</h2>" +
       '<p class="' + (running ? "on" : "off") + '"><strong>' + esc(status) + "</strong></p>" +
@@ -54,7 +54,7 @@
       '<p class="muted small">Checks sent: ' + checks + (lastAt ? " · last at " + esc(lastAt) : "") + "</p>" +
       (running
         ? '<button class="btn" id="stop" type="button">Stop</button>'
-        : '<button class="btn" id="start" type="button">Start listening</button>') +
+        : '<button class="btn" id="start" type="button">Start listening</button> <button class="btn" id="test" type="button">Test the code</button>') +
       "</section>" +
       '<section class="panel"><h3>Settings</h3><form id="opts" class="row">' +
       '<label class="field">Check every<select name="every">' +
@@ -140,6 +140,29 @@
     if (running) timer = setTimeout(checkOnce, Math.max(45, settings.every * 60 - CLIP_SECONDS) * 1000);
   }
 
+  // Checks the code and the connection without using the microphone.
+  async function testCode() {
+    status = "Testing…"; render();
+    try {
+      const form = new FormData();
+      form.append("code", settings.code);
+      const r = await fetch(FN, { method: "POST", body: form });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok) {
+        if (j.bar) { settings.bar = j.bar; save(settings); }
+        status = "Code works" + (j.note === "song lookups are off" ? ". Song lookups aren't switched on yet." : ".");
+        log("Test: code works for " + (barNames[j.bar] || j.bar));
+      } else if (r.status === 429) {
+        status = "Code works. Wait a minute between checks.";
+      } else {
+        status = r.status === 401 ? "That sensor code isn't working. Check it in the dashboard." : "Couldn't reach Bar Vibe (" + r.status + ").";
+      }
+    } catch (e) {
+      status = "Couldn't reach Bar Vibe. Check the internet connection.";
+    }
+    render();
+  }
+
   async function keepAwake() {
     try { if ("wakeLock" in navigator && running) wake = await navigator.wakeLock.request("screen"); } catch (e) {}
   }
@@ -191,6 +214,7 @@
   });
   root.addEventListener("click", (e) => {
     if (e.target.id === "start") start();
+    if (e.target.id === "test") testCode();
     if (e.target.id === "stop") { status = "Stopped"; stop(); }
     if (e.target.id === "unpair") { stop(); settings.code = ""; settings.bar = ""; save(settings); render(); }
   });
