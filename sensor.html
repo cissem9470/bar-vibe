@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bar Vibe Sensor</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#14111c">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css?v=12">
+  <link rel="stylesheet" href="dashboard.css?v=12">
+  <style>
+    #sensor { max-width: 520px; margin: 0 auto; padding: 16px; }
+    #sensor .big { font-size: 2.4rem; font-weight: 700; margin: .2em 0; }
+    #sensor .song { font-size: 1.2rem; font-weight: 600; }
+    #sensor .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    #sensor .row > * { flex: 1 1 140px; }
+    #sensor .log { font-size: .85rem; max-height: 220px; overflow: auto; }
+    #sensor .log p { margin: .2em 0; }
+    #sensor .on { color: #7be495; }
+    #sensor .off { color: #ff8a8a; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="./" class="brand" aria-label="Bar Vibe home"><span class="brand-dot"></span>Bar Vibe</a>
+    <nav class="topnav"><a href="./">Bars</a><a href="sensor.html" class="active">Sensor</a></nav>
+  </header>
+  <main id="sensor"><p class="loading">Loading…</p></main>
+  <script src="config.js?v=12"></script>
+  <script src="sensor.js?v=12"></script>
+</body>
+</html>

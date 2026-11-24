@@ -212,12 +212,12 @@
       if (!s.count) {
         return '<a class="card" href="#/bar/' + esc(bar.id) + '"><div class="card-top"><span class="avatar">' + bar.emoji +
           '</span><div><h3>' + esc(bar.name) + '</h3><p class="muted">' + esc(bar.area) + " · " + esc(bar.kind) +
-          '</p></div></div><p class="headline">No ratings yet tonight</p><p class="muted small">Be the first to say how it is.</p></a>';
+          '</p></div></div><p class="headline">No ratings yet tonight</p>' + songLine(data[bar.id]) + '<p class="muted small">Be the first to say how it is.</p></a>';
       }
       return '<a class="card heat-' + s.heat + '" href="#/bar/' + esc(bar.id) + '">' +
         '<div class="card-top"><span class="avatar">' + bar.emoji + '</span><div><h3>' + esc(bar.name) + '</h3><p class="muted">' +
         esc(bar.area) + " · " + esc(bar.kind) + '</p></div><span class="heat-dot" title="' + s.heat + '"></span></div>' +
-        '<p class="headline">' + esc(s.headline) + "</p>" +
+        '<p class="headline">' + esc(s.headline) + "</p>" + songLine(data[bar.id]) +
         '<div class="meters">' + meter(s.crowd, "Crowd", "crowd") + meter(s.sound, "Sound", "sound") + "</div>" +
         '<div class="card-foot"><span class="mood-chip">' + moodEmoji(s.topMood) + " " + esc(s.topMood) + "</span>" +
         (s.topMusic ? '<span class="mood-chip">' + musicEmoji(s.topMusic) + " " + esc(s.topMusic) + "</span>" : "") +
@@ -256,6 +256,12 @@
         esc(sensor.db) + "</strong> dB</p></div><p class=\"muted small\">" + esc(dbWords(sensor.db)) + " · " + ago(sensor.created_at) + "</p></div>"
       : "";
 
+    const song = data[id] && data[id].song;
+    const songBlock = song
+      ? '<div class="panel now-playing-panel"><p class="eyebrow">Now playing</p><p class="song"><strong>🎵 ' + esc(song.title) + "</strong>" +
+        (song.artist ? " · " + esc(song.artist) : "") + '</p><p class="muted small">Heard by the in-bar sensor ' + ago(song.created_at) + "</p></div>"
+      : "";
+
     const moods = s.count
       ? '<div class="panel"><p class="eyebrow">Mood</p>' + s.moods.slice(0, 4).map((m) =>
           '<div class="bar-row"><span>' + moodEmoji(m.mood) + " " + esc(m.mood) + '</span><div class="track"><div class="fill" style="width:' +
@@ -281,8 +287,15 @@
       '<section class="bar-head"><span class="avatar lg">' + bar.emoji + '</span><div><h1>' + esc(bar.name) + '</h1><p class="muted">' +
       esc(bar.area) + " · " + esc(bar.kind) + (bar.hours ? " · " + esc(bar.hours) : "") + "</p></div></section>" +
       '<p class="blurb">' + esc(bar.blurb) + "</p>" +
-      vibe + sensorBlock + musicPanel + moods + recent +
+      vibe + songBlock + sensorBlock + musicPanel + moods + recent +
       '<div class="sticky-cta"><a class="btn primary wide" href="#/rate/' + esc(bar.id) + '">I\'m here: rate the vibe</a></div>';
+  }
+
+  function songLine(slot) {
+    const song = slot && slot.song;
+    if (!song) return "";
+    return '<p class="now-playing small">🎵 Now playing: <strong>' + esc(song.title) + "</strong>" +
+      (song.artist ? " · " + esc(song.artist) : "") + "</p>";
   }
 
   function dbWords(db) {
@@ -342,14 +355,14 @@
       '<p class="lead">People decide where to go out from their couch. Bar Vibe shows them what your room feels like right now, so the right crowd walks in.</p>' +
       '<div class="panel"><h3>How it works</h3><ol>' +
       "<li><strong>Live ratings.</strong> Guests already inside tap in the crowd, the sound and the mood in ten seconds. The phone checks they\'re really at the bar, so ratings can\'t come from someone across town.</li>" +
-      "<li><strong>Sound sensor.</strong> A small listening device measures how loud the room is. It reads volume only and never records conversations.</li>" +
+      "<li><strong>Sound sensor.</strong> An optional phone near the speakers measures how loud the room is and, every couple of minutes, records a few seconds of music to name the song playing. Those clips are sent to a song-matching service (AudD) only to name the song; Bar Vibe doesn't keep them, and the phone is placed by the speakers, not the tables, so it picks up music rather than conversations. Bars agree before a sensor goes in.</li>" +
       "<li><strong>One clear answer.</strong> People nearby see “Busy with a real buzz” and how many say come now.</li></ol></div>" +
       '<div class="panel"><h3>What your bar gets</h3><ul>' +
       "<li>Your busy nights show up as busy, which draws more people in.</li>" +
       "<li>Quiet nights become a selling point for people who want to talk.</li>" +
       "<li>A simple view of when your room fills up, hour by hour.</li></ul>" +
       '<p><a class="btn" href="dashboard.html">Bar owners: open your dashboard</a></p></div>' +
-      '<div class="panel"><h3>The pilot</h3><p>We\'re starting with one or two bars. It\'s free during the pilot: a table card with a QR code for guests, and an optional sound sensor.</p></div>' +
+      '<div class="panel"><h3>The pilot</h3><p>We\'re starting with one or two bars. It\'s free during the pilot: a table card with a QR code for guests, and an optional sound sensor.</p><p class="muted small">The sensor is a phone with its microphone on, placed by the speakers. It records a few seconds every couple of minutes to name the song and measure loudness. Clips are sent to a song-matching service and not kept by Bar Vibe. It only goes in with the bar\'s written okay, and the bar can switch it off any time.</p></div>' +
       "</section>";
   }
 

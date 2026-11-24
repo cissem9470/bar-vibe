@@ -125,6 +125,7 @@
     if (state.isAdmin) {
       state.bars = allBars;
       state.owners = await call("/rest/v1/bar_owners?select=bar_id,email&order=bar_id.asc,email.asc");
+      try { state.sensors = await call("/rest/v1/rpc/list_sensor_codes", { method: "POST", body: {} }); } catch (e) { state.sensors = []; }
     } else {
       const mine = await call("/rest/v1/bar_owners?select=bar_id,email");
       const ids = new Set(mine.map((o) => o.bar_id));
@@ -279,7 +280,22 @@
       '<label class="field wide-field"><span>Location (latitude, longitude)</span><input name="latlng" placeholder="40.7213, -74.0452"></label>' +
       '<button class="btn primary" type="submit">Add bar</button></form>' +
       '<p class="muted small">For the location, right-click the bar in Google Maps and tap the numbers to copy them. Without it, anyone anywhere can rate the bar.</p></div>' +
+      sensorPanel(barOptions) +
       "</section>";
+  }
+
+  function sensorPanel(barOptions) {
+    const names = {};
+    state.bars.forEach((b) => { names[b.id] = b.name; });
+    const rows = (state.sensors || []).map((d) =>
+      '<li><div><strong>' + esc(d.code) + "</strong> · " + esc(names[d.bar_id] || d.bar_id) + (d.active ? "" : ' <span class="muted small">(off)</span>') +
+      '<div class="muted small">' + (d.last_seen ? "Last heard from " + esc(new Date(d.last_seen).toLocaleString()) : "Not used yet") + "</div></div>" +
+      '<button class="btn small-btn" data-action="sensor" data-code="' + esc(d.code) + '" data-active="' + (d.active ? "1" : "0") + '">' + (d.active ? "Switch off" : "Switch on") + "</button></li>").join("");
+    return '<div class="panel"><h3>Sensor phones</h3>' +
+      '<p class="muted small">Make a code for a bar, open <a href="sensor.html">the sensor page</a> on the phone that stays there, and type the code in. Only with the bar\'s okay.</p>' +
+      '<form data-form="sensor" class="form-grid"><label class="field"><span>Bar</span><select name="bar">' + barOptions + "</select></label>" +
+      '<button class="btn primary" type="submit">Make a sensor code</button></form>' +
+      (rows ? '<ul class="owner-list">' + rows + "</ul>" : "") + "</div>";
   }
 
   function viewDashboard() {
@@ -329,6 +345,10 @@
         await call("/rest/v1/bar_owners", { method: "POST", headers: { Prefer: "return=minimal" }, body: { bar_id: f.get("bar"), email: email } });
         toast("Linked " + email);
         await refreshAll();
+      } else if (form.dataset.form === "sensor") {
+        const code = await call("/rest/v1/rpc/create_sensor_code", { method: "POST", body: { p_bar: f.get("bar") } });
+        toast("Sensor code: " + code);
+        await refreshAll();
       } else if (form.dataset.form === "addbar") {
         const name = String(f.get("name") || "").trim();
         const row = { id: slug(name), name: name, area: f.get("area") || null, kind: f.get("kind") || null, emoji: f.get("emoji") || null, blurb: f.get("blurb") || null, sort: 100 };
@@ -361,6 +381,10 @@
         if (!confirm("Remove " + t.dataset.email + " from this bar?")) return;
         await call("/rest/v1/bar_owners?bar_id=eq." + encodeURIComponent(t.dataset.bar) + "&email=eq." + encodeURIComponent(t.dataset.email), { method: "DELETE" });
         toast("Removed");
+        return refreshAll();
+      }
+      if (a === "sensor") {
+        await call("/rest/v1/rpc/set_sensor_active", { method: "POST", body: { p_code: t.dataset.code, p_active: t.dataset.active !== "1" } });
         return refreshAll();
       }
       if (a === "toggle") {

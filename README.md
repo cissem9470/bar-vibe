@@ -27,6 +27,18 @@ To go **live** (everyone sees everyone's ratings), it needs a free database:
 
 The sound sensor posts decibel readings to the `sensor_readings` table with the project's service key, which must stay on the sensor and never go in this repo.
 
+## "Now playing" sensor phone
+
+One old Android phone, plugged in near a bar's speakers, can tell the app what song is playing and how loud it is.
+
+1. In the dashboard (admin), under **Sensor phones**, pick the bar and tap **Make a sensor code**.
+2. On the phone, open `sensor.html` in Chrome, type the code, tap **Start listening** and allow the microphone. Keep the page open and the phone charging.
+3. Every 1, 2 or 5 minutes it records 8 seconds, measures loudness, and sends the clip to the `now-playing` Supabase edge function. The function saves the loudness, sends the clip to AudD to name the song, and saves only the title and artist. Clips aren't stored.
+
+Song names stay off until an AudD API token is added as an edge function secret named `AUDD_API_TOKEN` (Supabase dashboard → Edge Functions → Secrets). Until then the phone still sends loudness. AudD gives a few hundred free lookups, then a paid plan; one phone checking every 2 minutes uses about 30 lookups an hour.
+
+Only put a sensor in with the bar's written okay. The app's About page tells guests what it does.
+
 ## Files
 
 | File | What it does |
@@ -38,6 +50,8 @@ The sound sensor posts decibel readings to the `sensor_readings` table with the 
 | `config.js` | Live-mode settings |
 | `styles.css` | The look |
 | `supabase-setup.sql` | Database setup for live mode |
+| `sensor.html`, `sensor.js` | Sensor mode for the in-bar phone |
+| `supabase/functions/now-playing/` | Edge function: checks the sensor code, saves loudness, looks up the song |
 | `dashboard.html`, `dashboard.js`, `dashboard.css` | Bar owner and admin dashboard |
 
 ## Rating only at the bar

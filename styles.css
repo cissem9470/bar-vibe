@@ -182,3 +182,8 @@ main { max-width: 960px; margin: 0 auto; padding: 16px 16px 120px; outline: none
   .bar-row { grid-template-columns: 96px 1fr 38px; }
   .scale-btn .l { font-size: 10px; }
 }
+
+/* Now playing (in-bar sensor) */
+.now-playing { margin: 4px 0 8px; color: var(--muted, #b9b3c9); }
+.now-playing strong { color: inherit; filter: brightness(1.25); }
+.now-playing-panel .song { font-size: 1.1rem; margin: 4px 0; }

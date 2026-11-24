@@ -128,6 +128,20 @@
     }
   }
 
+  // Songs a bar's sensor phone heard in the last 12 minutes.
+  async function liveSongs() {
+    const since = new Date(Date.now() - 12 * 60000).toISOString();
+    const url = base() + "now_playing?select=bar_id,title,artist,created_at" +
+      "&created_at=gte." + encodeURIComponent(since) + "&order=created_at.desc&limit=200" + keyParam();
+    try {
+      const res = await fetchWithTimeout(url);
+      if (!res.ok) return [];
+      return res.json();
+    } catch (e) {
+      return [];
+    }
+  }
+
   // ---------- public API ----------
   const myRatings = () => safeGet(LOCAL_KEY, []);
 
@@ -156,10 +170,12 @@
     const since = new Date(now - WINDOW_MS).toISOString();
     let ratings = [];
     let sensors = [];
+    let songs = [];
     if (LIVE) {
-      const results = await Promise.all([liveRatings(since), liveSensors(), liveBars()]);
+      const results = await Promise.all([liveRatings(since), liveSensors(), liveBars(), liveSongs()]);
       ratings = results[0];
       sensors = results[1];
+      songs = results[3];
     } else {
       window.BARS.forEach(function (bar) {
         if (!bar.profile) return; // real bars never get made-up ratings
@@ -169,11 +185,15 @@
       ratings = ratings.concat(myRatings().filter(function (x) { return x.created_at >= since; }));
     }
     const byBar = {};
-    window.BARS.forEach(function (b) { byBar[b.id] = { ratings: [], sensor: null }; });
+    window.BARS.forEach(function (b) { byBar[b.id] = { ratings: [], sensor: null, song: null }; });
     ratings.forEach(function (x) { if (byBar[x.bar_id]) byBar[x.bar_id].ratings.push(x); });
     sensors.forEach(function (s) {
       const slot = byBar[s.bar_id];
       if (slot && (!slot.sensor || s.created_at > slot.sensor.created_at)) slot.sensor = s;
+    });
+    songs.forEach(function (s) {
+      const slot = byBar[s.bar_id];
+      if (slot && (!slot.song || s.created_at > slot.song.created_at)) slot.song = s;
     });
     Object.keys(byBar).forEach(function (id) {
       byBar[id].ratings.sort(function (a, b) { return a.created_at < b.created_at ? 1 : -1; });

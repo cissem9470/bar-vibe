@@ -147,3 +147,72 @@ insert into public.bars (id, name, area, kind, emoji, blurb, lat, lng, sort) val
 ($q$keyhole$q$,$q$The Keyhole Bar$q$,$q$242 Bay St$q$,$q$Dive bar$q$,$q$🗝️$q$,$q$Cash-only dive with karaoke, games and cheap drinks.$q$,40.72124,-74.044524,11),
 ($q$dullboy$q$,$q$dullboy$q$,$q$364 Grove St$q$,$q$Cocktail bar$q$,$q$🍸$q$,$q$Small cocktail bar a short walk from Grove Street.$q$,40.7213918,-74.0425412,12)
 on conflict (id) do nothing;
+
+-- ============================================================
+-- "Now playing" sensor phone (see supabase/functions/now-playing)
+-- ============================================================
+create table if not exists public.now_playing (
+  id bigint generated always as identity primary key,
+  bar_id text not null check (char_length(bar_id) <= 40),
+  title text not null check (char_length(title) <= 200),
+  artist text check (artist is null or char_length(artist) <= 200),
+  created_at timestamptz not null default now()
+);
+create index if not exists now_playing_recent on public.now_playing (bar_id, created_at desc);
+alter table public.now_playing enable row level security;
+create policy "read now playing" on public.now_playing for select to anon, authenticated
+  using (created_at > now() - interval '6 hours' or private.is_admin() or private.owns_bar(bar_id));
+grant select on public.now_playing to anon, authenticated;
+
+create table if not exists private.sensor_devices (
+  code text primary key,
+  bar_id text not null,
+  created_at timestamptz not null default now(),
+  last_seen timestamptz,
+  active boolean not null default true
+);
+revoke all on private.sensor_devices from anon, authenticated;
+
+create or replace function public.create_sensor_code(p_bar text)
+returns text language plpgsql security definer set search_path = '' as $$
+declare c text;
+begin
+  if not private.is_admin() then raise exception 'not authorized'; end if;
+  if not exists (select 1 from public.bars where id = p_bar) then raise exception 'unknown bar'; end if;
+  c := upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 10));
+  insert into private.sensor_devices (code, bar_id) values (c, p_bar);
+  return c;
+end $$;
+
+create or replace function public.list_sensor_codes()
+returns table (code text, bar_id text, created_at timestamptz, last_seen timestamptz, active boolean)
+language plpgsql security definer set search_path = '' as $$
+begin
+  if not private.is_admin() then raise exception 'not authorized'; end if;
+  return query select d.code, d.bar_id, d.created_at, d.last_seen, d.active
+    from private.sensor_devices d order by d.created_at desc;
+end $$;
+
+create or replace function public.set_sensor_active(p_code text, p_active boolean)
+returns void language plpgsql security definer set search_path = '' as $$
+begin
+  if not private.is_admin() then raise exception 'not authorized'; end if;
+  update private.sensor_devices set active = p_active where code = p_code;
+end $$;
+
+-- Used only by the edge function (service role).
+create or replace function public.sensor_checkin(p_code text)
+returns text language plpgsql security definer set search_path = '' as $$
+declare d record;
+begin
+  select * into d from private.sensor_devices where code = p_code for update;
+  if not found or not d.active then return null; end if;
+  if d.last_seen is not null and d.last_seen > now() - interval '40 seconds' then return 'too_soon'; end if;
+  update private.sensor_devices set last_seen = now() where code = p_code;
+  return d.bar_id;
+end $$;
+
+revoke execute on function public.create_sensor_code(text), public.list_sensor_codes(), public.set_sensor_active(text, boolean) from public, anon;
+grant execute on function public.create_sensor_code(text), public.list_sensor_codes(), public.set_sensor_active(text, boolean) to authenticated;
+revoke execute on function public.sensor_checkin(text) from public, anon, authenticated;
+grant execute on function public.sensor_checkin(text) to service_role;
