@@ -59,14 +59,15 @@ Deno.serve(async (req) => {
       if (j.status === "success" && j.result && j.result.title) {
         const title = String(j.result.title).slice(0, 200);
         const artist = j.result.artist ? String(j.result.artist).slice(0, 200) : null;
-        // Skip a duplicate row when the same song is still playing.
-        const { data: last } = await pub.from("now_playing").select("title,artist,created_at")
-          .eq("bar_id", bar).order("created_at", { ascending: false }).limit(1).maybeSingle();
+        // Same song still playing: refresh its "last heard" time instead of adding a row.
+        const { data: last } = await pub.from("now_playing").select("id,title,artist,last_heard")
+          .eq("bar_id", bar).order("last_heard", { ascending: false }).limit(1).maybeSingle();
         const same = last && last.title === title && last.artist === artist &&
-          Date.now() - new Date(last.created_at).getTime() < 15 * 60 * 1000;
+          Date.now() - new Date(last.last_heard).getTime() < 15 * 60 * 1000;
         let songErr: { message: string } | null = null;
-        if (!same) ({ error: songErr } = await pub.from("now_playing").insert({ bar_id: bar, title, artist }));
-        if (songErr) console.error("now_playing insert", songErr.message);
+        if (same) ({ error: songErr } = await pub.from("now_playing").update({ last_heard: new Date().toISOString() }).eq("id", last!.id));
+        else ({ error: songErr } = await pub.from("now_playing").insert({ bar_id: bar, title, artist }));
+        if (songErr) console.error("now_playing save", songErr.message);
         out.song = { title, artist };
         out.song_saved = !songErr;
       } else if (j.status === "error") {

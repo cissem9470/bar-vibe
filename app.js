@@ -259,7 +259,7 @@
     const song = data[id] && data[id].song;
     const songBlock = song
       ? '<div class="panel now-playing-panel"><p class="eyebrow">Now playing</p><p class="song"><strong>🎵 ' + esc(song.title) + "</strong>" +
-        (song.artist ? " · " + esc(song.artist) : "") + '</p><p class="muted small">Heard by the in-bar sensor ' + ago(song.created_at) + "</p></div>"
+        (song.artist ? " · " + esc(song.artist) : "") + '</p><p class="muted small">Heard by the in-bar sensor ' + ago(song.last_heard || song.created_at) + "</p></div>"
       : "";
 
     const moods = s.count
@@ -295,7 +295,8 @@
     const song = slot && slot.song;
     if (!song) return "";
     return '<p class="now-playing small">🎵 Now playing: <strong>' + esc(song.title) + "</strong>" +
-      (song.artist ? " · " + esc(song.artist) : "") + "</p>";
+      (song.artist ? " · " + esc(song.artist) : "") +
+      ' <span class="muted">· heard ' + ago(song.last_heard || song.created_at) + "</span></p>";
   }
 
   function dbWords(db) {

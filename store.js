@@ -128,11 +128,13 @@
     }
   }
 
-  // Songs a bar's sensor phone heard in the last 12 minutes.
+  // Songs a bar's sensor phone heard in the last 5 minutes. A song that
+  // hasn't been heard again in that time drops off "Now playing".
+  const SONG_FRESH_MIN = 5;
   async function liveSongs() {
-    const since = new Date(Date.now() - 12 * 60000).toISOString();
-    const url = base() + "now_playing?select=bar_id,title,artist,created_at" +
-      "&created_at=gte." + encodeURIComponent(since) + "&order=created_at.desc&limit=200" + keyParam();
+    const since = new Date(Date.now() - SONG_FRESH_MIN * 60000).toISOString();
+    const url = base() + "now_playing?select=bar_id,title,artist,created_at,last_heard" +
+      "&last_heard=gte." + encodeURIComponent(since) + "&order=last_heard.desc&limit=200" + keyParam();
     try {
       const res = await fetchWithTimeout(url);
       if (!res.ok) return [];
@@ -193,7 +195,7 @@
     });
     songs.forEach(function (s) {
       const slot = byBar[s.bar_id];
-      if (slot && (!slot.song || s.created_at > slot.song.created_at)) slot.song = s;
+      if (slot && (!slot.song || s.last_heard > slot.song.last_heard)) slot.song = s;
     });
     Object.keys(byBar).forEach(function (id) {
       byBar[id].ratings.sort(function (a, b) { return a.created_at < b.created_at ? 1 : -1; });

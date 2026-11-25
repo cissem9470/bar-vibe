@@ -220,3 +220,8 @@ grant execute on function public.sensor_checkin(text) to service_role;
 -- The sensor function writes with the service role, which needs these grants.
 grant select, insert on public.now_playing, public.sensor_readings to service_role;
 grant usage, select on sequence public.now_playing_id_seq, public.sensor_readings_id_seq to service_role;
+
+-- "Now playing" freshness: the sensor refreshes last_heard while the same song keeps playing.
+alter table public.now_playing add column if not exists last_heard timestamptz not null default now();
+create index if not exists now_playing_last_heard_idx on public.now_playing (last_heard desc);
+grant update (last_heard) on public.now_playing to service_role;
