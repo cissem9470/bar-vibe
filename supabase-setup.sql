@@ -216,3 +216,7 @@ revoke execute on function public.create_sensor_code(text), public.list_sensor_c
 grant execute on function public.create_sensor_code(text), public.list_sensor_codes(), public.set_sensor_active(text, boolean) to authenticated;
 revoke execute on function public.sensor_checkin(text) from public, anon, authenticated;
 grant execute on function public.sensor_checkin(text) to service_role;
+
+-- The sensor function writes with the service role, which needs these grants.
+grant select, insert on public.now_playing, public.sensor_readings to service_role;
+grant usage, select on sequence public.now_playing_id_seq, public.sensor_readings_id_seq to service_role;

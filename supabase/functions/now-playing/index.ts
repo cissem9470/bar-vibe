@@ -37,8 +37,10 @@ Deno.serve(async (req) => {
   // Loudness reading, if the phone sent one.
   const dbVal = Math.round(Number(form.get("db")));
   if (Number.isFinite(dbVal) && dbVal >= 20 && dbVal <= 130) {
-    await pub.from("sensor_readings").insert({ bar_id: bar, db: dbVal });
+    const { error: dbErr } = await pub.from("sensor_readings").insert({ bar_id: bar, db: dbVal });
+    if (dbErr) console.error("sensor_readings insert", dbErr.message);
     out.db = dbVal;
+    out.db_saved = !dbErr;
   }
 
   // Song match, only when the AudD token has been set as a function secret.
@@ -62,8 +64,11 @@ Deno.serve(async (req) => {
           .eq("bar_id", bar).order("created_at", { ascending: false }).limit(1).maybeSingle();
         const same = last && last.title === title && last.artist === artist &&
           Date.now() - new Date(last.created_at).getTime() < 15 * 60 * 1000;
-        if (!same) await pub.from("now_playing").insert({ bar_id: bar, title, artist });
+        let songErr: { message: string } | null = null;
+        if (!same) ({ error: songErr } = await pub.from("now_playing").insert({ bar_id: bar, title, artist }));
+        if (songErr) console.error("now_playing insert", songErr.message);
         out.song = { title, artist };
+        out.song_saved = !songErr;
       } else if (j.status === "error") {
         out.song = null;
         out.note = "lookup error";
